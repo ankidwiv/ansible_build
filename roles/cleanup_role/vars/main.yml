@@ -1,0 +1,4 @@
+---
+# vars file for cleanup_role
+#
+instance_tag: ami_builder

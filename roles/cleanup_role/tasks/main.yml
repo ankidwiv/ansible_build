@@ -1,0 +1,10 @@
+---
+# tasks file for cleanup_role
+-
+      name: "Remove host from inventory File"
+      replace:
+       path: /etc/ansible/hosts
+       regexp: "{{instance_tag}}"
+       replace: "#{{ instance_tag }}"
+       after: [justcreated]
+

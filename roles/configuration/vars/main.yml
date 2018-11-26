@@ -1,0 +1,11 @@
+---
+# vars file for provisioning
+#
+inventory_path: /etc/ansible/hosts
+aws_region: ap-south-1
+aws_zone: ap-south-1a
+subnet_id: subnet-ce9029a6
+keypair_name: MyEc2key.pem
+instance_name: ami_builder
+image_id: ami-5b673c34
+ansible_ssh_private_key_file: /home/ec2-user/MyEc2key.pem

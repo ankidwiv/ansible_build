@@ -1,0 +1,13 @@
+---
+# variable instance_tag is required to run this playbook
+- hosts: localhost
+  roles:
+     - provisioning
+
+- hosts: "{{ instance_tag }}"
+  roles: 
+     - configuration
+
+#- hosts: localhost 
+ # roles: 
+  #   - cleanup_role

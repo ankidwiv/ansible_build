@@ -1,0 +1,55 @@
+---
+# tasks file for provisioning
+    -
+      ec2:
+        assign_public_ip: true
+        count_tag:
+          Category: "Environment:Dev+Criticality:Normal+Role:Application"
+          Owner: "EPRID:208656,Name: '{{ instance_name }}',Contact:romsha.bhatt@hp.com"
+          Name: "{{instance_name}}"
+        exact_count: 1
+        group_id:
+          - sg-555ced3e
+        image: "{{image_id}}"
+        instance_tags:
+          Category: "Environment:Dev+Criticality:Normal+Role:Application"
+          Owner: "EPRID:208656,Name:ami_builder,Contact:romsha.bhatt@hp.com"
+          Name: "{{ instance_tag }}"
+        instance_type: t2.micro
+        key_name: "{{keypair_name}}"
+        region: "{{aws_region}}"
+        vpc_subnet_id: "{{subnet_id}}"
+        wait: true
+        wait_timeout: 500
+        zone: "{{aws_zone}}"
+      name: "check launched instance for AMI bundle"
+      register: ami_instance
+    -
+      name: Checking if the machine is up and running
+      local_action: wait_for port=22 host="{{ ami_instance.tagged_instances.0.public_ip }}" search_regex=OpenSSH delay=30
+      notify: machine_ready
+      tags: check
+
+ #   - name: Taking snapshot of instance
+ #     ec2_ami:
+ #         instance_id: "{{ ami_instance.tagged_instances.0.id }}"
+ #         name: "Centos7-DNSJoined-BaseImage"
+ #         region: "{{ aws_region }}"
+ #         state: present
+ #         wait: true
+ #     register: amioutput
+    -
+      name: "adding host from inventory File"
+      lineinfile:
+         path: "{{inventory_path}}"
+         insertafter: '[justcreated]'
+         line: "{{instance_tag}} ansible_ssh_host='{{ ami_instance.tagged_instances.0.public_ip }}' ansible_ssh_private_key_file='{{ ssh_key }}' ansible_ssh_user=ec2-user"
+
+    -
+      name: "Remove host from inventory File"
+      replace:
+       path: /etc/ansible/hosts
+       regexp: "#{{ instance_tag }}"
+       replace: "{{instance_tag}}"
+       after: [justcreated]
+

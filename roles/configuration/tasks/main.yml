@@ -1,0 +1,73 @@
+---
+# tasks file for configuration
+    -
+      name: "Update Packages on Launched Instances"
+      become: true
+      become_user: root
+      yum:
+        name: "*"
+        state: latest
+    -
+      name: "Install required Packages on Launched Instances"
+      become: true
+      become_user: root
+      yum:
+        name: "{{ item }}"
+        state: latest
+      with_items:
+        - wget
+        - git
+        - postgresql-contrib
+        - ksh
+        - zip
+    -
+      name: "Make directory for Sqoop Lib"
+      become: true
+      become_user: root
+      file: path=/usr/lib/sqoop/lib state=directory
+    -
+      name: "Copy required Driver from S3 to Local directory"
+      become: true
+      become_user: root
+      command: aws s3 cp s3://emr-sqoop-data-prd/driver /usr/lib/sqoop/lib --recursive
+    -
+      name: "Install postgresql92 driver"
+      become: true
+      become_user: root
+      command: yum -y install postgresql92-server.x86_64 postgresql92-contrib.x86_64 postgresql92-devel.x86_64
+      ignore_errors: true
+    -
+      name: "Install psycopg2"
+      become: true
+      become_user: root
+      command: pip install psycopg2==2.7.5
+    -
+      name: "Make directory for Postgresql"
+      become: true
+      become_user: root
+      file: path=/opt/postgresql/bin/ state=directory
+    -
+      name: "Copy contents for Postgresql"
+      become: true
+      become_user: root
+      command: "cp /usr/bin/psql /opt/postgresql/bin/"
+    -
+      name: "Install Mailx"
+      become: true
+      become_user: root
+      shell: "test -e /etc/postfix/main.cf && sed -i 's/#relayhost = $mydomain/relayhost = smtp3.hp.com/g'  /etc/postfix/main.cf"
+    -
+      name: "Stop Postfix Service"
+      become: true
+      become_user: root
+      shell: "/usr/sbin/postfix stop"
+    -
+      name: "Start Postfix Service"
+      become: true
+      become_user: root
+      command: "/usr/sbin/postfix start"
+    -
+      name: "Check if Mail Service is running"
+      become: true
+      become_user: root
+      command: mail -s "Ansible" -r "anirudh.ajit.deshpande@hp.com" "anirudh.ajit.deshpande@hp.com"

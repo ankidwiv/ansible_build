@@ -26,11 +26,6 @@
       become_user: root
       file: path=/usr/lib/sqoop/lib state=directory
     -
-      name: "Copy required Driver from S3 to Local directory"
-      become: true
-      become_user: root
-      command: aws s3 cp s3://emr-sqoop-data-prd/driver /usr/lib/sqoop/lib --recursive
-    -
       name: "Install postgresql92 driver"
       become: true
       become_user: root
@@ -52,11 +47,6 @@
       become_user: root
       command: "cp /usr/bin/psql /opt/postgresql/bin/"
     -
-      name: "Install Mailx"
-      become: true
-      become_user: root
-      shell: "test -e /etc/postfix/main.cf && sed -i 's/#relayhost = $mydomain/relayhost = smtp3.hp.com/g'  /etc/postfix/main.cf"
-    -
       name: "Stop Postfix Service"
       become: true
       become_user: root
@@ -66,8 +56,3 @@
       become: true
       become_user: root
       command: "/usr/sbin/postfix start"
-    -
-      name: "Check if Mail Service is running"
-      become: true
-      become_user: root
-      command: mail -s "Ansible" -r "anirudh.ajit.deshpande@hp.com" "anirudh.ajit.deshpande@hp.com"
